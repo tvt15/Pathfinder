@@ -210,15 +210,13 @@ def main(window,width):
     end=None
 
     run=True#these are our flags
-    started=False
+    
 
     while run:
         draw(window,grid,ROWS,width)
         for event in pygame.event.get():
             if event.type==pygame.QUIT:
                 run=False
-            if started:
-                continue#this makes sure that once the algo has started the user wont be able to do anything other thaN QUIt
             if pygame.mouse.get_pressed()[0]:#left click
                 pos=pygame.mouse.get_pos()#we get the pos whre mouse was clicked
                 row, col=get_clicked_pos(pos,ROWS,width)
