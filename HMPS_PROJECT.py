@@ -77,18 +77,18 @@ class Spot:
     def update_neighbors(self,grid):#we are using this class so that the start or end point dont end up in a circle of barrier and hence being unreachable
         self.neighbors=[]
         if self.row < self.total_rows-1 and not grid[self.row+1][self.col].is_barrier():
-            self.neighbors.append(grid[self.rows+1][self.col])
+            self.neighbors.append(grid[self.row+1][self.col])
         # self.row < self.total_rows-1 is checking if the current row has a row below it
         #grid[self.row+1][self.col].is_barrier() is checking if the node *below* our current node is a barrier or not
         #if it passes both test then it is a suitable neighbor and can be added to the neighbors list we made at start
 
         if self.row>0 and not grid[self.row-1][self.col].is_barrier():#checks if node above our current node is a suitable neighbor
-            self.neighbors.append(grid[self.rows-1][self.col])
+            self.neighbors.append(grid[self.row-1][self.col])
         
         if self.col < self.total_rows-1 and not grid[self.row][self.col+1].is_barrier():#checks if node on the right is a suitable neighbor
             self.neighbors.append(grid[self.row][self.col+1])
 
-        if self.col > 0 and not grid[self.row][self.col-1].isbarrier():#checks on its left
+        if self.col > 0 and not grid[self.row][self.col-1].is_barrier():#checks on its left
             self.neighbors.append(grid[self.row][self.col-1])
 
     def __lt__(self, other): #lt stands for less. we wld invoke this fn when comapring two nodes/spots as named here
@@ -100,11 +100,16 @@ def h(p1,p2): #this is the hysteric fn or the h score which will give us teh sho
     x2,y2,=p2
     return abs(x1-x2)+abs(y1-y2) #abs() is a default python fn it gives absolute value.
 
+def reconstruct_path(came_from,current,draw):
+    while current in came_from:
+        current=came_from[current]
+        current.make_path()#it simply run a for loop until it hits the start node which isnt in the list and keeps making a path until then
+        draw()
 
 def algorithm(draw,grid,start,end):
     count= 0
-    open_set=PriorityQueue
-    open_set.put()#its the same as push but for the priorityqueue library.it basically adds the elemnt to priority queue
+    open_set=PriorityQueue()
+    open_set.put((0,count,start))#its the same as push but for the priorityqueue library.it basically adds the elemnt to priority queue
     came_from={}#creats an empty list/dictionary
     g_score={spot: float("inf") for row in grid for spot in row } #float("inf") initializes inifinity in python
     #for row in grid for spot in row is shorter way for nested for loops
@@ -115,7 +120,7 @@ def algorithm(draw,grid,start,end):
     
     open_set_hash={start}#this helps us check the nodes that are present in the queue and the ones that arent coz we cant check them in priority queue directly
 
-    while not open.set.empty():#this while will run when the algo has checked all the possible paths.and if we still havent found a path then it donesnt exist
+    while not open_set.empty():#this while will run when the algo has checked all the possible paths.and if we still havent found a path then it donesnt exist
         for event in pygame.event.get():
             if event.type== pygame.QUIT:
                 pygame.quit()
@@ -124,10 +129,30 @@ def algorithm(draw,grid,start,end):
         open_set_hash.remove(current)#this is to synchronise our hash list with our open set list
 
         if current == end:#then we have found our shortest path
-            pass
+            reconstruct_path(came_from,end,draw)
+            end.make_end()
             return True
         
+        for neighbor in current.neighbors:#we are checking all the valid neighbors of current node
+            temp_g_score=g_score[current] + 1#coz its adjacent to it so it will take only 1 to reach  the neighbor
+
+            if temp_g_score < g_score[neighbor]:#if the temp score is lower than the actual g score of the neighbor then we actually found a better path so we will upadte the score
+                came_from[neighbor]= current
+                g_score[neighbor]= temp_g_score
+                f_score[neighbor]=temp_g_score+h(neighbor.get_pos(),end.get_pos())
+                if neighbor not in open_set_hash:#this is why we are using hash list so that we can actually check
+                    count+=1#we increase the count of nodes in the original list
+                    open_set.put((f_score[neighbor],count,neighbor))
+                    open_set_hash.add(neighbor)#we add the same node to hash list so that both list remain same
+                    neighbor.make_open()#indicates to algo that this node needs to be considered too
+                
         
+        draw()
+
+        if current  != start:
+            current.make_closed()#we have looked into its neighbor in above loop so now we close the current node and if we need to open this we will be able when it becomes one of the neighbor with the above loop
+
+    return False        
         
         
         
@@ -219,15 +244,19 @@ def main(window,width):
                 elif spot == end:#same for end node
                     end=None
 
-            if event.type == event.KEYDOWN:#KEYDOWN=key pressed    
+            if event.type == pygame.KEYDOWN:#KEYDOWN=key pressed    
                 if event.key == pygame.K_SPACE and not started:
                     for row in grid:
                         for spot in row:
-                            spot.update_neighbors()
+                            spot.update_neighbors(grid)
 
                     algorithm(lambda: draw(window,grid,ROWS,width),grid,start,end)  #lambda is an anonymous function. 
                     #it acts a name for a function. it helps u to pass fucntions as an argument to another funciton.
-                    # for eg x=lambda:print("hello") and then u call x(), will print hello.  
+                    # for eg x=lambda:print("hello") and then u call x(), will print hello.
+                if event.key== pygame.K_r:#for resetting
+                    start=None
+                    end=None
+                    grid = make_grid(ROWS,width)  
 
 
     pygame.quit()#when close button is clicked
