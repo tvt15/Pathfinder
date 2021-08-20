@@ -104,7 +104,34 @@ def h(p1,p2): #this is the hysteric fn or the h score which will give us teh sho
 def algorithm(draw,grid,start,end):
     count= 0
     open_set=PriorityQueue
+    open_set.put()#its the same as push but for the priorityqueue library.it basically adds the elemnt to priority queue
+    came_from={}#creats an empty list/dictionary
+    g_score={spot: float("inf") for row in grid for spot in row } #float("inf") initializes inifinity in python
+    #for row in grid for spot in row is shorter way for nested for loops
+    #we are basically just giving infinity f score to all nodes
+    g_score[start]=0
+    f_score={spot:float("inf")for row in grid for spot in row}
+    f_score[start]=h(start.get_pos(),end.get_pos())
     
+    open_set_hash={start}#this helps us check the nodes that are present in the queue and the ones that arent coz we cant check them in priority queue directly
+
+    while not open.set.empty():#this while will run when the algo has checked all the possible paths.and if we still havent found a path then it donesnt exist
+        for event in pygame.event.get():
+            if event.type== pygame.QUIT:
+                pygame.quit()
+        
+        current = open_set.get()[2]#this will get us the node we are currently looking at.
+        open_set_hash.remove(current)#this is to synchronise our hash list with our open set list
+
+        if current == end:#then we have found our shortest path
+            pass
+            return True
+        
+        
+        
+        
+        
+
 
 
 def make_grid(rows,width):#will hold all the nodes
@@ -206,4 +233,4 @@ def main(window,width):
     pygame.quit()#when close button is clicked
 
 
-main(WINDOW,WIDTH)
+main(WINDOW,WIDTH)#calling the main function
