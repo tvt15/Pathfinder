@@ -1,6 +1,5 @@
 # Pathfinder
 A* pathfinder
-We have to complete it by 25th of september!
 /*
 H(n)= gives a score respresenting the shortest distance between the current point and end point regard less of the path being existent or not, found using formulas we used.
 G(n)=gives a score representing the current shortest path found between two points during the search
